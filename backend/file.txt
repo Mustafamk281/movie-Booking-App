@@ -1,0 +1,76 @@
+use schemaapp
+select*from seats
+select*from halls
+CREATE TABLE Shows (
+  show_id INT AUTO_INCREMENT PRIMARY KEY,
+  hall_id INT NOT NULL,
+  movie_id INT NOT NULL,
+  start_time DATETIME NOT NULL,
+  end_time DATETIME NOT NULL,
+  available_seats	INT,
+  FOREIGN KEY (hall_id) REFERENCES Halls(id) on delete cascade,
+  FOREIGN KEY (movie_id) REFERENCES Movies(id) on delete cascade
+);
+select*from users
+select*from shows
+CREATE TABLE Bookings (
+  booking_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  show_id INT NOT NULL,
+  ADD COLUMN total_price DECIMAL(10, 2) NOT NULL,
+  booking_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN payment_status ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
+  FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+  FOREIGN KEY (show_id) REFERENCES Shows(show_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE BookedSeats (
+  booked_seat_id INT AUTO_INCREMENT PRIMARY KEY,
+  booking_id INT NOT NULL,
+  seat_id INT NOT NULL,
+  show_id INT,
+  FOREIGN KEY (show_id) REFERENCES shows(show_id),
+  FOREIGN KEY (booking_id) REFERENCES Bookings(booking_id) ON DELETE CASCADE,
+  FOREIGN KEY (seat_id) REFERENCES Seats(id) ON DELETE CASCADE
+);
+select*from movies
+CREATE TABLE MovieReviews (
+  review_id INT AUTO_INCREMENT PRIMARY KEY,
+  movie_id INT NOT NULL,
+  user_id INT NOT NULL,
+  rating FLOAT NOT NULL CHECK (rating >= 1 AND rating <= 5),  -- Rating should be between 1 and 5
+  review_text TEXT,  -- Optional field for review content
+  review_date DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Automatically set the review time
+  FOREIGN KEY (movie_id) REFERENCES Movies(id) ON DELETE CASCADE,  -- Referencing Movies table
+  FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE  -- Referencing Users table
+);
+
+select*from users
+show create table movies
+desc movies
+delete from users where id = 13
+select*from movies
+select*from venues
+desc venues
+show create table venues
+show create table halls
+desc halls
+delete from halls where id = 40
+select*from halls
+
+select*from seats where hall_id = 42
+
+
+desc shows
+select*from shows
+delete from shows where show_id >=28 and show_id <=50
+desc bookings
+select*from bookings
+select*from booked_Seats
+
+SHOW TABLES;
+
+
+
+

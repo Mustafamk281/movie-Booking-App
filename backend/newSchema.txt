@@ -1,0 +1,135 @@
+CREATE TABLE `users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `full_name` VARCHAR(255) NOT NULL,
+  `user_name` VARCHAR(50) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  `phone_number` VARCHAR(15) NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `role` ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_name` (`user_name`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `phone_number` (`phone_number`)
+) 
+
+
+CREATE TABLE `genres` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+);
+CREATE TABLE `movies` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `genre_id` INT NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `trailer_url` VARCHAR(255) DEFAULT NULL,
+  `banner_image_url` VARCHAR(255) DEFAULT NULL,
+  `duration` INT NOT NULL,
+  `rating` FLOAT NOT NULL,
+  `description` TEXT,
+  `language` VARCHAR(50) DEFAULT NULL,
+  `country_of_origin` VARCHAR(100) DEFAULT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_name` (`name`),
+  UNIQUE KEY `unique_trailer_url` (`trailer_url`),
+  UNIQUE KEY `unique_banner_url` (`banner_image_url`),
+  KEY `genre_id` (`genre_id`),
+  CONSTRAINT `movies_ibfk_1` FOREIGN KEY (`genre_id`) REFERENCES `genres` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `movies_chk_1` CHECK (`rating` BETWEEN 0 AND 5)
+) 
+
+CREATE TABLE `venues` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `contact_email` VARCHAR(100) DEFAULT NULL,
+  `contact_phone` VARCHAR(20) DEFAULT NULL,
+  `address` TEXT,
+  `city` VARCHAR(100) DEFAULT NULL,
+  `state` VARCHAR(100) DEFAULT NULL,
+  `postal_code` VARCHAR(20) DEFAULT NULL,
+  `country` VARCHAR(100) DEFAULT NULL,
+  `status` ENUM('active', 'maintenance', 'closed') DEFAULT 'active',
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `contact_email` (`contact_email`),
+  UNIQUE KEY `contact_phone` (`contact_phone`)
+) 
+CREATE TABLE `halls` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `venue_id` INT NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `type` ENUM('standard', 'vip', 'deluxe') DEFAULT 'standard',
+  `status` ENUM('active', 'maintenance', 'closed') DEFAULT 'active',
+  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `venue_id` (`venue_id`, `name`),
+  CONSTRAINT `halls_ibfk_1` FOREIGN KEY (`venue_id`) REFERENCES `venues` (`id`) ON DELETE CASCADE
+) 
+
+CREATE TABLE `seats` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `hall_id` INT NOT NULL,
+  `seat_number` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hall_id` (`hall_id`, `seat_number`),
+  CONSTRAINT `seats_ibfk_1` FOREIGN KEY (`hall_id`) REFERENCES `halls` (`id`) ON DELETE CASCADE
+) 
+CREATE TABLE `shows` (
+  `show_id` INT NOT NULL AUTO_INCREMENT,
+  `hall_id` INT NOT NULL,
+  `movie_id` INT NOT NULL,
+  `start_time` DATETIME NOT NULL,
+  `end_time` DATETIME NOT NULL,
+  `available_seats` INT DEFAULT NULL,
+  PRIMARY KEY (`show_id`),
+  KEY `hall_id` (`hall_id`),
+  KEY `movie_id` (`movie_id`),
+  CONSTRAINT `shows_ibfk_1` FOREIGN KEY (`hall_id`) REFERENCES `halls` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `shows_ibfk_2` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE CASCADE
+) 
+CREATE TABLE `bookings` (
+  `booking_id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `show_id` INT NOT NULL,
+  `booking_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `total_price` DECIMAL(10,2) NOT NULL,
+  `payment_status` ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
+  PRIMARY KEY (`booking_id`),
+  KEY `user_id` (`user_id`),
+  KEY `show_id` (`show_id`),
+  CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`show_id`) REFERENCES `shows` (`show_id`) ON DELETE CASCADE
+)
+
+
+
+CREATE TABLE `bookedseats` (
+  `booked_seat_id` INT NOT NULL AUTO_INCREMENT,
+  `booking_id` INT NOT NULL,
+  `seat_no` INT NOT NULL,
+  `show_id` INT DEFAULT NULL,
+  PRIMARY KEY (`booked_seat_id`),
+  KEY `booking_id` (`booking_id`),
+  KEY `bookedseats_ibfk_1` (`show_id`),
+  CONSTRAINT `bookedseats_ibfk_1` FOREIGN KEY (`show_id`) REFERENCES `shows` (`show_id`) ON DELETE CASCADE,
+  CONSTRAINT `bookedseats_ibfk_2` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`) ON DELETE CASCADE
+)
+
+CREATE TABLE `moviereviews` (
+  `review_id` INT NOT NULL AUTO_INCREMENT,
+  `movie_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `rating` FLOAT NOT NULL,
+  `review_text` TEXT,
+  `review_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`review_id`),
+  KEY `movie_id` (`movie_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `moviereviews_ibfk_1` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `moviereviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `moviereviews_chk_1` CHECK ((`rating` >= 1 AND `rating` <= 5))
+) 
